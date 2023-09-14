@@ -1,4 +1,5 @@
-import youtubedl from "youtube-dl-exec";
+import youtubedl, { YtResponse } from "youtube-dl-exec";
+import { TDataVideo } from "./type";
 
 const url = "https://www.youtube.com/watch?v=2mN8ECdfWOU&ab_channel=SmartContractProgrammer";
 const options = {
@@ -6,7 +7,7 @@ const options = {
     noCheckCertificates: true,
     noWarnings: true,
     addHeader: ["referer:youtube.com", "user-agent:googlebot"],
-    output: "ma_video.mp4",
+    output: "./videos/ma_video.mp4",
 };
 
 const download = async () => {
@@ -21,7 +22,49 @@ const download = async () => {
 
 // download(url, options);
 
+const getData = async () => {
+    console.log("Récupération des données...");
+
+    try {
+        const info = await youtubedl(url, {
+            dumpSingleJson: true,
+            noCheckCertificates: true,
+            noWarnings: true,
+            preferFreeFormats: true,
+            addHeader: ["referer:youtube.com", "user-agent:googlebot"],
+        });
+        console.log(info);
+
+        // const videoDetails: {
+        //     format: string;
+        //     resolution: number;
+        //     sizeMB: string | number; // Convertit les octets en mégaoctets
+        // }[] = [];
+
+        const videoDetails: any[] = [];
+
+        info.formats.forEach((format) => {
+            // videoDetails.push({
+            //     format: format.format,
+            //     resolution: format.height,
+            //     sizeMB: format.filesize ? format.filesize / (1024 * 1024) : "Inconnu", // Convertit les octets en mégaoctets
+            // });
+            videoDetails.push(format);
+        });
+        console.log(videoDetails);
+
+        return {
+            details: videoDetails,
+        };
+    } catch (error) {
+        console.error("Erreur lors de la récupération des données:", error);
+        throw error;
+    }
+};
+
 const listerFormats = async (url: string) => {
+    console.log("Récupération des formats...");
+
     try {
         const output = await youtubedl(url, {
             dumpSingleJson: true,
@@ -32,13 +75,16 @@ const listerFormats = async (url: string) => {
         });
 
         if (output && output.formats) {
-            output.formats.forEach((format) => {
-                console.log(
-                    `Format ID: ${format.format_id}, Résolution: ${
-                        format.height ? format.height + "p" : "audio seulement"
-                    }, Taux de bits: ${format.tbr ? format.tbr + "k" : "N/A"}`
-                );
-            });
+            // output.formats.forEach((format) => {
+            //     console.log(
+            //         `Format ID: ${format.format_id}, Résolution: ${
+            //             format.height ? format.height + "p" : "audio seulement"
+            //         }, Taux de bits: ${format.tbr ? format.tbr + "k" : "N/A"}`
+            //     );
+            // });
+            console.log(output.formats[0]);
+
+            return formatData(output);
         } else {
             console.log("Aucun format disponible");
         }
@@ -47,7 +93,15 @@ const listerFormats = async (url: string) => {
     }
 };
 
-// listerFormats(url);
+function formatData(data: YtResponse): TDataVideo {
+    return {
+        name: data.title,
+        channel: data.channel,
+        description: data.description,
+        duration: data.duration,
+        formats: data.formats,
+    };
+}
 
 const downloadVideo = async (url: string, formatID: string) => {
     try {
@@ -66,4 +120,4 @@ const downloadVideo = async (url: string, formatID: string) => {
 
 // downloadVideo(url, "617"); // Télécharger la vidéo en 720p (format ID 22)
 
-export { download, listerFormats, downloadVideo };
+export { download, downloadVideo, getData, listerFormats };

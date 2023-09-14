@@ -1,21 +1,20 @@
 "use client";
 
+import { useState } from "react";
+
 export default function Download() {
-    async function test() {
+    const [url, setUrl] = useState("");
+    async function download() {
         const response = await fetch("/api/download");
 
-        const data = await response.json();
-
-        if (response.ok) {
-            console.log(data);
-        } else {
-            console.error(data.error);
-        }
+        console.log(response);
     }
 
     return (
         <>
-            <button onClick={test}>Test</button>
+            <button onClick={download}>Test</button>
+            <br />
+            <input type="url" onChange={(e) => setUrl(e.target.value)} />
         </>
     );
 }
