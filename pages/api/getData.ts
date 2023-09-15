@@ -2,6 +2,8 @@ import { listerFormats } from "@/app/library/functions";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    console.log(req.body);
+
     try {
         const url = req.body.url as string;
         const formats = await listerFormats(url);
