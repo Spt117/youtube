@@ -1,66 +1,10 @@
 import youtubedl, { YtResponse } from "youtube-dl-exec";
-import { TDataVideo } from "./type";
+import { TBody, TDataVideo } from "./type";
+import ffmpegPath from "ffmpeg-static";
+import { exec } from "child_process";
+import { promisify } from "util";
 
-const url = "https://www.youtube.com/watch?v=2mN8ECdfWOU&ab_channel=SmartContractProgrammer";
-const options = {
-    format: "best",
-    noCheckCertificates: true,
-    noWarnings: true,
-    addHeader: ["referer:youtube.com", "user-agent:googlebot"],
-    output: "./videos/ma_video.mp4",
-};
-
-const download = async () => {
-    try {
-        const data = await youtubedl(url, options);
-        console.log("Téléchargement terminé !");
-        console.log(data);
-    } catch (error) {
-        console.error("Erreur lors du téléchargement :", error);
-    }
-};
-
-// download(url, options);
-
-const getData = async () => {
-    console.log("Récupération des données...");
-
-    try {
-        const info = await youtubedl(url, {
-            dumpSingleJson: true,
-            noCheckCertificates: true,
-            noWarnings: true,
-            preferFreeFormats: true,
-            addHeader: ["referer:youtube.com", "user-agent:googlebot"],
-        });
-        console.log(info);
-
-        // const videoDetails: {
-        //     format: string;
-        //     resolution: number;
-        //     sizeMB: string | number; // Convertit les octets en mégaoctets
-        // }[] = [];
-
-        const videoDetails: any[] = [];
-
-        info.formats.forEach((format) => {
-            // videoDetails.push({
-            //     format: format.format,
-            //     resolution: format.height,
-            //     sizeMB: format.filesize ? format.filesize / (1024 * 1024) : "Inconnu", // Convertit les octets en mégaoctets
-            // });
-            videoDetails.push(format);
-        });
-        console.log(videoDetails);
-
-        return {
-            details: videoDetails,
-        };
-    } catch (error) {
-        console.error("Erreur lors de la récupération des données:", error);
-        throw error;
-    }
-};
+const execAsync = promisify(exec);
 
 const listerFormats = async (url: string) => {
     console.log("Récupération des formats...");
@@ -75,15 +19,6 @@ const listerFormats = async (url: string) => {
         });
 
         if (output && output.formats) {
-            // output.formats.forEach((format) => {
-            //     console.log(
-            //         `Format ID: ${format.format_id}, Résolution: ${
-            //             format.height ? format.height + "p" : "audio seulement"
-            //         }, Taux de bits: ${format.tbr ? format.tbr + "k" : "N/A"}`
-            //     );
-            // });
-            console.log(output.formats[0]);
-
             return formatData(output);
         } else {
             console.log("Aucun format disponible");
@@ -103,21 +38,41 @@ function formatData(data: YtResponse): TDataVideo {
     };
 }
 
-const downloadVideo = async (url: string, formatID: string) => {
+const downloadVideo = async (body: TBody) => {
+    console.log("Téléchargement en cours...");
+    const videoName = `${body.ids.idVideo}.mp4`;
+    const audioName = `${body.ids.idAudio}.mp3`;
+    const videoPath = `./public/${videoName}`;
+    const audioPath = `./public/${audioName}`;
+
     try {
-        await youtubedl(url, {
-            format: formatID,
+        await youtubedl(body.url, {
+            format: body.ids.idVideo,
             noCheckCertificates: true,
             noWarnings: true,
             addHeader: ["referer:youtube.com", "user-agent:googlebot"],
-            output: "ma_video5.mp4",
+            output: videoPath,
         });
-        console.log("Téléchargement terminé !");
+        console.log("Téléchargement vidéo terminé !");
+        await youtubedl(body.url, {
+            format: body.ids.idAudio,
+            noCheckCertificates: true,
+            noWarnings: true,
+            addHeader: ["referer:youtube.com", "user-agent:googlebot"],
+            output: audioPath,
+        });
+        console.log("Téléchargement audio terminé !");
     } catch (error) {
         console.error("Erreur lors du téléchargement :", error);
     }
+    try {
+        await execAsync(`${ffmpegPath} -i ${videoPath} -i ${audioPath} -c:v copy -c:a aac "./public/${body.name}.mp4"`);
+        console.log("Merge terminé !");
+        return `../../../../${body.name}.mp4`;
+    } catch (error) {
+        console.error("Erreur lors du merge :", error);
+        return "Merge error !";
+    }
 };
 
-// downloadVideo(url, "617"); // Télécharger la vidéo en 720p (format ID 22)
-
-export { download, downloadVideo, getData, listerFormats };
+export { downloadVideo, listerFormats };

@@ -1,12 +1,9 @@
 "use client";
-import { useState } from "react";
 import { useMyContext } from "../context/Context";
-import { promises } from "dns";
 import { TDataVideo } from "../library/type";
 
 export default function GetData() {
-    const [url, setUrl] = useState<string>("");
-    const { setDataVideo } = useMyContext();
+    const { setDataVideo, setUrl, url } = useMyContext();
 
     async function getData() {
         try {
@@ -19,7 +16,6 @@ export default function GetData() {
             });
             const data: TDataVideo = await res.json();
             setDataVideo(data);
-            console.log(data);
         } catch (err) {
             console.log(err);
             alert("Une erreur est survenue, l'url est peut-être invalide ou le serveur est indisponible.");
