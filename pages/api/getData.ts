@@ -7,6 +7,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
         const url = req.body.url as string;
         const formats = await listerFormats(url);
+        console.log(formats);
+
         res.status(200).send(formats);
     } catch (error) {
         if (error instanceof Error) {

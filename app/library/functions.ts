@@ -19,6 +19,7 @@ const listerFormats = async (url: string) => {
         });
 
         if (output && output.formats) {
+            console.log("Formats récupérés !");
             return formatData(output);
         } else {
             console.log("Aucun format disponible");

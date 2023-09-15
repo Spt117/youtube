@@ -14,17 +14,7 @@ export default function GetData() {
                 },
                 body: JSON.stringify({ url: url }),
             });
-
-            // Vérifiez si la réponse est OK et a du contenu
-            if (!res.ok || !res.headers.get("content-length")) {
-                throw new Error("Invalid or empty response from the server");
-            }
-
-            const rawData = await res.text(); // Get raw response for logging
-            console.log("Raw response:", rawData);
-
-            // Convert raw response to JSON
-            const data: TDataVideo = JSON.parse(rawData);
+            const data: TDataVideo = await res.json();
             setDataVideo(data);
         } catch (err) {
             console.log(err);
