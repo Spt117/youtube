@@ -1,12 +1,9 @@
 "use client";
-import { useState } from "react";
 import { useMyContext } from "../context/Context";
-import { promises } from "dns";
 import { TDataVideo } from "../library/type";
 
 export default function GetData() {
-    const [url, setUrl] = useState<string>("");
-    const { setDataVideo } = useMyContext();
+    const { setDataVideo, setUrl, url } = useMyContext();
 
     async function getData() {
         try {
@@ -17,9 +14,18 @@ export default function GetData() {
                 },
                 body: JSON.stringify({ url: url }),
             });
-            const data: TDataVideo = await res.json();
+
+            // Vérifiez si la réponse est OK et a du contenu
+            if (!res.ok || !res.headers.get("content-length")) {
+                throw new Error("Invalid or empty response from the server");
+            }
+
+            const rawData = await res.text(); // Get raw response for logging
+            console.log("Raw response:", rawData);
+
+            // Convert raw response to JSON
+            const data: TDataVideo = JSON.parse(rawData);
             setDataVideo(data);
-            console.log(data);
         } catch (err) {
             console.log(err);
             alert("Une erreur est survenue, l'url est peut-être invalide ou le serveur est indisponible.");
