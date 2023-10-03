@@ -6,7 +6,7 @@ export default function Download() {
     const { ids, url, dataVideo } = useMyContext();
 
     async function downloadOnServer() {
-        const body = { ids: ids, url: url, name: dataVideo?.name.replace(/[\|\?\<\>\:]/g, "") };
+        const body = { ids: ids, url: url, name: dataVideo?.name.replace(/[|?<>:/\\]/g, "") };
         const response = await fetch("/api/downloadOnServeur", {
             method: "POST",
             headers: {
