@@ -31,13 +31,13 @@ export default function Data() {
             <p>{formatDuration(dataVideo?.duration)}</p>
             <h2>Vidéo</h2>
             {dataVideo?.formats
-                .filter((format) => format.vcodec !== "none" && format.acodec === "none" && format.filesize)
+                .filter((format) => format.vcodec === "vp9" && format.filesize)
                 .map((format) => (
                     <FormatItem key={format.format_id} format={format} id="idVideo" />
                 ))}
             <h2>Audio</h2>
             {dataVideo?.formats
-                .filter((format) => format.acodec !== "none" && format.vcodec === "none" && format.filesize)
+                .filter((format) => format.acodec !== "opus" && format.acodec !== "none" && format.filesize)
                 .map((format) => (
                     <FormatItem key={format.format_id} format={format} id="idAudio" />
                 ))}

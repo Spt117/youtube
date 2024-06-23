@@ -10,16 +10,9 @@ export default function FormatItem({ format, id }: { format: YtFormat; id: keyof
 
     return (
         <div>
-            <input
-                id={id}
-                type="radio"
-                name={id}
-                value={format_id}
-                checked={ids[id] === format_id}
-                onChange={() => setIds({ ...ids, [id]: format_id })}
-            />
+            <input id={id} type="radio" name={id} value={format_id} checked={ids[id] === format_id} onChange={() => setIds({ ...ids, [id]: format_id })} />
             <label htmlFor={id}>
-                {format.format_id} - {format.format_note} - {sizeInMB} Mo - {format.vcodec} - {format.acodec}
+                {format.format_id} - {format.format_note} - {sizeInMB} Mo - {id === "idAudio" ? format.acodec : format.vcodec}
             </label>
         </div>
     );

@@ -41,20 +41,23 @@ function formatData(data: YtResponse): TDataVideo {
 
 const downloadVideo = async (body: TBody) => {
     console.log("Téléchargement en cours...");
-    const videoName = `${body.ids.idVideo}.mp4`;
-    const audioName = `${body.ids.idAudio}.mp3`;
-    const videoPath = `./public/${videoName}`;
+    const audioName = body.ids.idVideo ? `${body.ids.idAudio}.mp3` : `${body.name}.mp3`;
     const audioPath = `./public/${audioName}`;
 
     try {
-        await youtubedl(body.url, {
-            format: body.ids.idVideo,
-            noCheckCertificates: true,
-            noWarnings: true,
-            addHeader: ["referer:youtube.com", "user-agent:googlebot"],
-            output: videoPath,
-        });
-        console.log("Téléchargement vidéo terminé !");
+        if (body.ids.idVideo) {
+            const videoName = `${body.ids.idVideo}.mp4`;
+            const videoPath = `./public/${videoName}`;
+            await youtubedl(body.url, {
+                format: body.ids.idVideo,
+                noCheckCertificates: true,
+                noWarnings: true,
+                addHeader: ["referer:youtube.com", "user-agent:googlebot"],
+                output: videoPath,
+            });
+            console.log("Téléchargement vidéo terminé !");
+        }
+
         await youtubedl(body.url, {
             format: body.ids.idAudio,
             noCheckCertificates: true,
@@ -67,6 +70,9 @@ const downloadVideo = async (body: TBody) => {
         console.error("Erreur lors du téléchargement :", error);
     }
     try {
+        if (!body.ids.idVideo) return `../../../../${body.name}.mp3`;
+        const videoName = `${body.ids.idVideo}.mp4`;
+        const videoPath = `./public/${videoName}`;
         await execAsync(`${ffmpegPath} -i ${videoPath} -i ${audioPath} -c:v copy -c:a aac "./public/${body.name}.mp4"`);
         console.log("Merge terminé !");
         return `../../../../${body.name}.mp4`;
